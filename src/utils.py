@@ -5,7 +5,7 @@ import pandas as pd
 from torch.utils import data
 from scipy import sparse
 
-def get_device(i = 0):
+def get_device(i = 1):
     if torch.cuda.device_count() >= i +1:
         return torch.device(f"cuda:{i}")
     else:
@@ -28,6 +28,7 @@ def anndata_preprocess(adata,
     sc.pp.log1p(adata)
     sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
     adata.raw = adata
+    adata = adata[:, adata.var.highly_variable]
     return adata
 
 def data_loader(adata, batch_size, shuffle = True):

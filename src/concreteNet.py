@@ -3,10 +3,11 @@ from torch import nn
 
 
 class ConcreteAutoencoder(nn.Module):
-    def __init__(self, input_dim, k, hidden_dim, temperature=0.1):
+    def __init__(self, input_dim, k, hidden_dim,device, temperature=0.1):
         super().__init__()
         self.temperature = temperature
-        self.k = k
+        self.device = device
+        self.alpha = nn.Parameter(torch.randn(input_dim, k))
         self.decoder = nn.Sequential(
             nn.Linear(k, hidden_dim),
             nn.ReLU(),
@@ -14,16 +15,16 @@ class ConcreteAutoencoder(nn.Module):
             nn.Sigmoid()
         )
 
-    def sample_gumbel(self, shape, eps=1e-5):
+    def sample_gumbel(self, shape, eps=1e-20):
         U = torch.rand(shape)
         return -torch.log(-torch.log(U + eps) + eps)
 
-    def gumbel_softmax_sample(self, logits, temperature):
-        y = logits + self.sample_gumbel(logits.size())
+    def gumbel_softmax_sample(self, alpha, temperature):
+        y = alpha + self.sample_gumbel(alpha.size()).to(self.device)
         return nn.functional.softmax(y / temperature, dim=-1)
 
-    def gumbel_softmax(self, logits, temperature):
-        y = self.gumbel_softmax_sample(logits, temperature)
+    def gumbel_softmax(self, alpha, temperature):
+        y = self.gumbel_softmax_sample(alpha, temperature)
         shape = y.size()
         _, ind = y.max(dim=-1)
         y_hard = torch.zeros_like(y).view(-1, shape[-1])
@@ -32,9 +33,7 @@ class ConcreteAutoencoder(nn.Module):
         return (y_hard - y).detach() + y
 
     def forward(self, x):
-        sample_size = x.shape[1]
-        alpha = nn.Parameter(torch.randn(self.k, sample_size))
-        logits = torch.mm(x, alpha)
-        z = self.gumbel_softmax_sample(logits, self.temperature)
+        m = self.gumbel_softmax(self.alpha, self.temperature)
+        z = torch.mm(x,m)
         reconstruction = self.decoder(z)
         return reconstruction, z
