@@ -19,7 +19,7 @@ def anndata_load(file_path):
 
 def anndata_preprocess(adata,
                         min_genes = 200,
-                        min_cells = 3,
+                        min_cells = 100,
                         n_top_genes = 5000):
     """Preprocess function"""
     sc.pp.filter_cells(adata, min_genes=min_genes)
