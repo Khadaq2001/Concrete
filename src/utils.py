@@ -28,7 +28,7 @@ def anndata_preprocess(adata,
     sc.pp.log1p(adata)
     sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
     adata.raw = adata
-    adata = adata[:, adata.var.highly_variable]
+    adata = adata[:,adata.var.highly_variable]
     return adata
 
 def data_loader(adata, batch_size, shuffle = True):

@@ -10,7 +10,7 @@ class ConcreteAutoencoder(nn.Module):
         self.decoder = nn.Sequential(
             nn.Linear(k, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, input_dim),
+            nn.Linear(hidden_dim, input_dim)
         )
 
     def sample_gumbel(self, shape, eps=1e-20):
