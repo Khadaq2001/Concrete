@@ -27,3 +27,23 @@ class ConcreteAutoencoder(nn.Module):
         return reconstruction, z, m
 
 
+class FullConnectedLayer(nn.Module):
+    def __init__(self, input_dim, hidden_dim, embedding_dim, device):
+        super().__init__()
+        self.device = device
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, embedding_dim)
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(embedding_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, input_dim)
+        )
+
+    def forward(self, x):
+        z = self.encoder(x)
+        reconstruction = self.decoder(z)
+        return reconstruction, z
+    
