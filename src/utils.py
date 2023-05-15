@@ -39,3 +39,20 @@ def data_loader(adata, batch_size, shuffle = True):
     dat = torch.Tensor(dat)
     dataloader = data.DataLoader(dat, batch_size =batch_size, shuffle = shuffle) # type: ignore
     return dataloader
+
+def get_TF(file_path, adata, target_index = None):
+    '''Get TF list from file_path'''
+    with open(file_path, 'r') as f:
+        tf_rows = f.readlines()
+        tf_list = [tf.strip() for tf in tf_rows]
+    tf_index = []
+    for tf in tf_list:
+        if tf in adata.var_names:
+            tf_index.append(adata.var_names.get_loc(tf))
+    if target_index:
+        tf_index.append(target_index)
+    print(tf_index)
+    tf_adata = adata[:, tf_index]
+    return tf_adata
+
+

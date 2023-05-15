@@ -1,7 +1,9 @@
 import torch 
 import time 
 
-def concrete_trainer(net, loss, dataloader, num_epoch, learning_rate, weight_decay, device, init_temp= 10, end_temp= 0.1):
+def concrete_trainer(net, loss, dataloader, num_epoch, learning_rate, weight_decay,
+                     device, init_temp= 10, end_temp= 0.1):
+
     net = net.to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr = learning_rate, weight_decay=weight_decay)
     start_time  = time.time()
