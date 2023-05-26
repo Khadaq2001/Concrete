@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.utils import data
 from scipy import sparse
+import numpy as np
 
 def get_device(i = 1):
     if torch.cuda.device_count() >= i +1:
@@ -24,7 +25,7 @@ def get_TF(file_path, adata, target_index = None):
     tf_adata = adata[:, tf_index]
     return tf_adata
 
-def data_loader(adata, batch_size, shuffle = False):
+def data_loader(adata, batch_size=128, shuffle = False):
     if sparse.issparse(adata.X):
         dat = adata.X.A
     else:
@@ -69,3 +70,12 @@ class HurdleLoss(nn.BCEWithLogitsLoss):
 
         loss = self.lam * hurdle_loss + mse
         return torch.mean(torch.sum(loss, dim=-1))
+
+def train_test_split(adata, test_size = 0.2):
+    '''Split adata into train and test set'''
+    n = adata.shape[0]
+    test_index = np.random.choice(n, int(n*test_size), replace = False)
+    train_index = np.setdiff1d(np.arange(n), test_index)
+    adata_train = adata[train_index]
+    adata_test = adata[test_index]
+    return adata_train, adata_test

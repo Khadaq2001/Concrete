@@ -9,8 +9,7 @@ class ConcreteAutoencoder(nn.Module):
         self.decoder = nn.Sequential(
             nn.Linear(k, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim*2),
-            nn.Linear(hidden_dim*2, out_dim)
+            nn.Linear(hidden_dim, out_dim)
         )
 
     def sample_gumbel(self, shape, eps=1e-20):
@@ -29,23 +28,28 @@ class ConcreteAutoencoder(nn.Module):
 
 
 
-class FullConnectedLayer(nn.Module):
-    def __init__(self, input_dim, hidden_dim, embedding_dim, device):
+class MLP(nn.Module):
+    def __init__(self, input_dim, hidden_dim,out_dim, device):
         super().__init__()
         self.device = device
-        self.encoder = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, embedding_dim)
-        )
+        
         self.decoder = nn.Sequential(
-            nn.Linear(embedding_dim, hidden_dim),
+            nn.Linear(input_dim, hidden_dim[0]),
             nn.ReLU(),
-            nn.Linear(hidden_dim, input_dim)
+            nn.Linear(hidden_dim[0], hidden_dim[1]),
+            nn.ReLU(),
+            nn.Linear(hidden_dim[1], out_dim)
         )
 
     def forward(self, x):
-        z = self.encoder(x)
-        reconstruction = self.decoder(z)
-        return reconstruction, z
+        reconstruction = self.decoder(x)
+        return reconstruction
+    
+    def validate(self, x_val, y_val):
+        self.eval()
+
+        with torch.no_grad():
+            reconstruction = self.forward(x_val)
+            loss = nn.functional.mse_loss(reconstruction, y_val)
+        return loss.item()
     
